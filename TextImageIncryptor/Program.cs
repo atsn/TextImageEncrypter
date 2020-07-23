@@ -9,6 +9,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using TextImageEncrypter.Exceptions;
 using TextImageIncryptor;
 
 namespace TextImageEncryptor
@@ -20,11 +21,12 @@ namespace TextImageEncryptor
             WriteToImage();
 
             ReadFromImage();
+
         }
 
         private static void ReadFromImage()
         {
-            Bitmap img = new Bitmap(@"C:\Users\Peter\Desktop\UdklipEncoded.PNG");
+            Bitmap img = new Bitmap(@"..\..\..\TestData\TestImageEncoded.jpg");
 
             ImageDecoder decoder = new ImageDecoder(img);
 
@@ -33,18 +35,38 @@ namespace TextImageEncryptor
 
         private static void WriteToImage()
         {
-            Bitmap img = new Bitmap(@"C:\Users\Peter\Desktop\Udklip.PNG");
+            Bitmap img = new Bitmap(@"..\..\..\TestData\TestImage.jpg");
 
             ImageEncoder encoder = new ImageEncoder(img);
 
             encoder.AppedLineAndEncryptString("Hello World");
 
-            encoder.AppedLineAndEncryptString("Some Cake");
-            encoder.AppedAndEncryptString(Statics.text);
+            try
+            {
+                for (int i = 0; i < 10000000; i++)
+                {
+                    encoder.AppedLineAndEncryptString(Statics.text);
+                }
+            }
+            catch (NoMoreSpaceInImageException e)
+            {
+                try
+                {
+                    for (int i = 0; i < 10000000; i++)
+                    {
+                        encoder.AppedAndEncryptString("e");
+                    }
+
+                }
+                catch (NoMoreSpaceInImageException)
+                {
+
+                }
+            }
 
             var finalImage = encoder.GetCurrentImage();
 
-            File.WriteAllBytes(@"C:\Users\Peter\Desktop\UdklipEncoded.PNG", finalImage.ToByteArray(ImageFormat.Png));
+            File.WriteAllBytes(@"..\..\..\TestData\TestImageEncoded.jpg", finalImage.ToByteArray(ImageFormat.Png));
         }
     }
 }

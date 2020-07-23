@@ -1,39 +1,56 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Text;
 
 namespace TextImageIncryptor
 {
-    public static class EncoderDecoderHelper
+    public class EncoderDecoderHelper
     {
-        public static void SetNextCurrentPosition(ref int currentPosition, List<int> positions)
+        public string Seed { get; set; } = "1";
+        private Random random;
+
+        public EncoderDecoderHelper()
+        {
+            random = new Random(Encoding.UTF8.GetBytes(Seed).Sum(i => i));
+        }
+
+        public void SetNextCurrentPosition(ref int currentPosition, List<int> positions)
         {
             currentPosition = positions.Last();
             positions.RemoveAt(positions.Count - 1);
         }
 
-        public static void FillPositionArray(Bitmap image, List<int> positions)
+        public void FillPositionArray(Bitmap image, List<int> positions)
         {
 
-            var i = 0;
+
+            int i = 0;
             for (int x = 0; x < image.Width; x++)
             {
                 for (int y = 0; y < image.Height; y++)
                 {
-                    positions.Add(i++);
+                    for (int j = 0; j < 3; j++)
+                    {
+                        positions.Add(i++);
+                    }
                 }
             }
 
+            positions = positions.OrderBy(i => random.Next(0, positions.Count)).ToList();
+
+
         }
 
-        public static void FillPixelColorsArray(Bitmap image ,byte[] pixelColors)
+        public void FillPixelColorsArray(Bitmap image, byte[] pixelColors)
         {
             int i = 0;
             for (int x = 0; x < image.Width; x++)
             {
                 for (int y = 0; y < image.Height; y++)
                 {
-                    var pixel = image.GetPixel(x, y);
+                    Color pixel = image.GetPixel(x, y);
 
                     pixelColors[i++] = pixel.R;
                     pixelColors[i++] = pixel.G;

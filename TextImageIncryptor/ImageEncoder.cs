@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
+using TextImageEncrypter.Exceptions;
 using TextImageIncryptor;
 
 namespace TextImageEncryptor
@@ -16,13 +18,14 @@ namespace TextImageEncryptor
         private int currentPosition;
         private byte[] pixelColors ;
         private StringBuilder allText;
+        private EncoderDecoderHelper helper;
 
-        private void GetLenthPositions()
+        private void GetLengthPositions()
         {
             for (int i = 0; i < 32; i++)
             {
                 lengthPositions.Add(currentPosition);
-                EncoderDecoderHelper.SetNextCurrentPosition(ref currentPosition, positions);
+                helper.SetNextCurrentPosition(ref currentPosition, positions);
             }
         }
 
@@ -34,14 +37,26 @@ namespace TextImageEncryptor
 
         public void AppedAndEncryptString(string textToBeEncrypted)
         {
+            var temp = (allText + textToBeEncrypted).GetAsUTF8BitArray().Length;
+            if (temp >= ((Image.Width * Image.Height * 3) -32))
+            {
+                throw new NoMoreSpaceInImageException($"The image only have space for {((Image.Width * Image.Height * 3)/8)-4} bytes, But the total length of the text you want to encode is {(allText.ToString() + textToBeEncrypted).GetAsUTF8BitArray().Length/8}");
+            }
+
             allText.Append(textToBeEncrypted);
+            
+
             var bits = textToBeEncrypted.GetAsUTF8BitArray();
 
-            foreach (bool bit in bits)
+            Loading.StartLoading("Encrypting Image",200,0);
+            for (var i = 0; i < bits.Count; i++)
             {
+                Loading.SetProgress((i*100) /bits.Count);
+                bool bit = bits[i];
                 pixelColors[currentPosition] = GetAlteredPixelColor(bit, pixelColors[currentPosition]);
-                EncoderDecoderHelper.SetNextCurrentPosition(ref currentPosition, positions);
+                helper.SetNextCurrentPosition(ref currentPosition, positions);
             }
+            Loading.StopLoading();
         }
 
         public ImageEncoder(Bitmap image)
@@ -51,13 +66,14 @@ namespace TextImageEncryptor
 
         private void Initialize(Bitmap image)
         {
+            helper = new EncoderDecoderHelper();
             allText = new StringBuilder();
             Image = image;
             pixelColors = new byte[image.Height * image.Width * 3];
-            EncoderDecoderHelper.FillPositionArray(image, positions);
-            EncoderDecoderHelper.SetNextCurrentPosition(ref currentPosition, positions);
-            EncoderDecoderHelper.FillPixelColorsArray(image, pixelColors);
-            GetLenthPositions();
+            helper.FillPositionArray(image, positions);
+            helper.SetNextCurrentPosition(ref currentPosition, positions);
+            helper.FillPixelColorsArray(image, pixelColors);
+            GetLengthPositions();
 
         }
 
@@ -92,7 +108,6 @@ namespace TextImageEncryptor
             foreach (int lenthPosition in lengthPositions)
             {
                 pixelColors[lenthPosition] = GetAlteredPixelColor(lengthArray[i++], pixelColors[lenthPosition]);
-                EncoderDecoderHelper.SetNextCurrentPosition(ref currentPosition, positions);
             }
            
         }

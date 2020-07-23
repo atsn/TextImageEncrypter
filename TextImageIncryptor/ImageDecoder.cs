@@ -13,6 +13,7 @@ namespace TextImageIncryptor
         private byte[] pixelColors;
         private List<int> positions = new List<int>();
         private int currentPosition;
+        private EncoderDecoderHelper helper;
 
         public string GetTextFromImage()
         {
@@ -20,7 +21,7 @@ namespace TextImageIncryptor
             for (int i = 0; i < 32; i++)
             {
                 lengthArray[i] = pixelColors[currentPosition].GetFirstBit();
-                EncoderDecoderHelper.SetNextCurrentPosition(ref currentPosition, positions);
+                helper.SetNextCurrentPosition(ref currentPosition, positions);
             }
 
             var length = lengthArray.GetAsByteArray().GetAsInt();
@@ -28,7 +29,7 @@ namespace TextImageIncryptor
             for (int i = 0; i < length; i++)
             {
                 text[i] = pixelColors[currentPosition].GetFirstBit();
-                EncoderDecoderHelper.SetNextCurrentPosition(ref currentPosition, positions);
+                helper.SetNextCurrentPosition(ref currentPosition, positions);
             }
 
             return text.GetAsUTF8String();
@@ -43,11 +44,12 @@ namespace TextImageIncryptor
 
         private void Initialize(Bitmap image)
         {
+            helper = new EncoderDecoderHelper();
             Image = image;
             pixelColors = new byte[image.Height * image.Width * 3];
-            EncoderDecoderHelper.FillPositionArray(image, positions);
-            EncoderDecoderHelper.SetNextCurrentPosition(ref currentPosition, positions);
-            EncoderDecoderHelper.FillPixelColorsArray(image, pixelColors);
+            helper.FillPositionArray(image, positions);
+            helper.SetNextCurrentPosition(ref currentPosition, positions);
+            helper.FillPixelColorsArray(image, pixelColors);
         }
 
         public void Reset(Bitmap image)
