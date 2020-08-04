@@ -34,7 +34,7 @@ namespace TextImageEncryptor
             textToBeEncrypted += "\n";
             AppedAndEncryptString(textToBeEncrypted);
         }
-
+        //TODO AddEncryption
         public void AppedAndEncryptString(string textToBeEncrypted)
         {
             var temp = (allText + textToBeEncrypted).GetAsUTF8BitArray().Length;
