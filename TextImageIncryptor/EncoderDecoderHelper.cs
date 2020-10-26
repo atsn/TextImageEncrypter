@@ -4,16 +4,15 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 
-namespace TextImageIncryptor
+namespace TextImageEncrypter
 {
     public class EncoderDecoderHelper
     {
-        public string Seed { get; set; } = "1";
         private Random random;
 
         public EncoderDecoderHelper()
         {
-            random = new Random(Encoding.UTF8.GetBytes(Seed).Sum(i => i));
+            random = new Random(Encoding.UTF8.GetBytes(Statics.passwordHash).Sum(i => i));
         }
 
         public void SetNextCurrentPosition(ref int currentPosition, List<int> positions)

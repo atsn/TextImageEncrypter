@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
-using TextImageEncryptor;
 
-namespace TextImageIncryptor
+namespace TextImageEncrypter
 {
     class ImageDecoder
     {
@@ -32,7 +29,7 @@ namespace TextImageIncryptor
                 helper.SetNextCurrentPosition(ref currentPosition, positions);
             }
 
-            return text.GetAsUTF8String();
+            return Encryptor.Decrypt(Statics.passwordHash, text.GetAsByteArray());
         }
 
        

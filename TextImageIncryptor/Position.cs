@@ -1,4 +1,4 @@
-﻿namespace TextImageEncryptor
+﻿namespace TextImageEncrypter
 {
     public struct Position
     {

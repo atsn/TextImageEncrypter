@@ -3,10 +3,9 @@ using System.Collections;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace TextImageEncryptor
+namespace TextImageEncrypter
 {
     public static class Extensions
     {
@@ -45,6 +44,11 @@ namespace TextImageEncryptor
         {
             var bytes = Encoding.UTF8.GetBytes(text);
 
+            return new BitArray(bytes);
+        }
+
+        public static BitArray GetAsUTF8BitArray(this byte[] bytes)
+        {
             return new BitArray(bytes);
         }
 

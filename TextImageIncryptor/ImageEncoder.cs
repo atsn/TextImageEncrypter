@@ -2,15 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Net.Http.Headers;
 using System.Text;
 using TextImageEncrypter.Exceptions;
-using TextImageIncryptor;
 
-namespace TextImageEncryptor
+namespace TextImageEncrypter 
 {
-    class ImageEncoder
+    class ImageEncoder :IDisposable
     {
         private Bitmap Image { get; set; }
         private List<int> lengthPositions = new List<int>();
@@ -29,33 +26,57 @@ namespace TextImageEncryptor
             }
         }
 
-        public void AppedLineAndEncryptString(string textToBeEncrypted)
+        public void AppendLineAndEncryptString(string textToBeEncrypted)
         {
             textToBeEncrypted += "\n";
-            AppedAndEncryptString(textToBeEncrypted);
+            AppendAndEncryptString(textToBeEncrypted);
         }
-        //TODO AddEncryption
-        public void AppedAndEncryptString(string textToBeEncrypted)
+
+    
+        public void AppendAndEncryptString(string textToBeEncrypted)
         {
-            var temp = (allText + textToBeEncrypted).GetAsUTF8BitArray().Length;
-            if (temp >= ((Image.Width * Image.Height * 3) -32))
+            var temp = Encryptor.Encrypt(Statics.passwordHash,allText + textToBeEncrypted).GetAsUTF8BitArray().Length;
+
+            var size = ((Image.Width * Image.Height * 3) - 32);
+            var What = temp > ((Image.Width * Image.Height * 3) - 32);
+            if (temp > ((Image.Width * Image.Height * 3) -32))
             {
                 throw new NoMoreSpaceInImageException($"The image only have space for {((Image.Width * Image.Height * 3)/8)-4} bytes, But the total length of the text you want to encode is {(allText.ToString() + textToBeEncrypted).GetAsUTF8BitArray().Length/8}");
             }
 
             allText.Append(textToBeEncrypted);
-            
+        }
 
-            var bits = textToBeEncrypted.GetAsUTF8BitArray();
+        //TODO FIX CALCULATIONS
+        public int GetSizeLeftInImage()
+        {
+            var allTextsize = allText.ToString().GetAsUTF8BitArray().Length / 8;
 
-            Loading.StartLoading("Encrypting Image",200,0);
+            if (allTextsize % 16 != 0)
+            {
+                allTextsize = allTextsize + (16 - ((allText.ToString().GetAsUTF8BitArray().Length / 8) % 16));
+            }
+
+
+            var SpaceLeft = (((Image.Width * Image.Height * 3) / 8) - 4) - allTextsize;
+            //Beregn størrelsen på krypteret.
+
+            return SpaceLeft;
+        }
+
+        private void FinalizeImage(string textToBeEncrypted)
+        {
+            var bits = Encryptor.Encrypt(Statics.passwordHash, textToBeEncrypted).GetAsUTF8BitArray();
+
+            Loading.StartLoading("Saving Pixel Colors", 200, 0);
             for (var i = 0; i < bits.Count; i++)
             {
-                Loading.SetProgress((i*100) /bits.Count);
+                Loading.SetProgress((i * 100) / bits.Count);
                 bool bit = bits[i];
                 pixelColors[currentPosition] = GetAlteredPixelColor(bit, pixelColors[currentPosition]);
                 helper.SetNextCurrentPosition(ref currentPosition, positions);
             }
+
             Loading.StopLoading();
         }
 
@@ -83,8 +104,20 @@ namespace TextImageEncryptor
             Initialize(image);
         }
 
-        public Bitmap GetCurrentImage()
+        public void Reset()
         {
+            helper = new EncoderDecoderHelper();
+            allText = new StringBuilder();
+            pixelColors = new byte[Image.Height * Image.Width * 3];
+            helper.FillPositionArray(Image, positions);
+            helper.SetNextCurrentPosition(ref currentPosition, positions);
+            helper.FillPixelColorsArray(Image, pixelColors);
+            GetLengthPositions();
+        }
+
+        public Bitmap GetImageAndResetEncoder()
+        {
+            FinalizeImage(allText.ToString());
             EncryptTextLength();
 
             int i = 0;
@@ -102,7 +135,7 @@ namespace TextImageEncryptor
 
         private void EncryptTextLength()
         {
-            var lengthArray = allText.ToString().GetAsUTF8BitArray().Length.GetASBytes().GetAsBitArray();
+            var lengthArray = Encryptor.Encrypt(Statics.passwordHash, allText.ToString()).GetAsUTF8BitArray().Length.GetASBytes().GetAsBitArray();
             int i = 0;
 
             foreach (int lenthPosition in lengthPositions)
@@ -125,5 +158,9 @@ namespace TextImageEncryptor
 
         }
 
+        public void Dispose()
+        {
+            Image?.Dispose();
+        }
     }
 }

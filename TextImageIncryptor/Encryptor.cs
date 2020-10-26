@@ -3,7 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace TextImageEncryptor
+namespace TextImageEncrypter
 {
     public static class Encryptor
     {
