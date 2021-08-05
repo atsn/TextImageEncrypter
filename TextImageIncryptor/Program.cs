@@ -17,57 +17,26 @@ namespace TextImageEncrypter
         static void Main(string[] args)
         {
 
-            List<string> strings = new List<string>();
-            StringBuilder builder = new StringBuilder();
-            Loading.StartLoading($"{0} : 200000");
-
-            for (int i = 0; i < 1383294; i++)
+            setPasswordHash(GetPassword());
+            int answer = -1;
+            bool done = false;
+            while (!done)
             {
-                Loading.ChangeMessage($"{i} : 200000");
+                answer = GetAnswers.GetChoiceFromListAsInt("What do you wish to do", "Encrypt", "Decrypt", "Exit");
 
-                builder.Append("j");
-                if (i > 1382294)
+                switch (answer)
                 {
-                    strings.Add(builder.ToString());
+                    case 0:
+                        WriteToImage();
+                        break;
+                    case 1:
+                        ReadFromImage();
+                        break;
+                    default:
+                        done = true;
+                        break;
                 }
             }
-           
-            Loading.StopLoading();
-            foreach (var s in strings)
-            {
-                var lenth = s.GetAsUTF8BitArray().Length / 8 + (((s.GetAsUTF8BitArray().Length / 8) % 16) == 0
-                    ? 0
-                    : (16 - ((s.GetAsUTF8BitArray().Length / 8) % 16)));
-
-
-                    Console.WriteLine(lenth);
-                    var password = "111111111111111111111111111111111111111111111111111111111111111111111";
-                    Console.WriteLine(Encryptor.Encrypt(password, s).Length);
-                    Console.WriteLine();
-                    Console.WriteLine();
-                    Console.WriteLine();
-            }
-            return;
-            //* setPasswordHash(GetPassword());
-            //* int answer = -1;
-            //* bool done = false;
-            //* while (!done)
-            //* {
-            //*     answer = GetAnswers.GetChoiceFromListAsInt("What do you wish to do", "Encrypt", "Decrypt", "Exit");
-            //* 
-            //*     switch (answer)
-            //*     {
-            //*         case 0:
-            //*             WriteToImage();
-            //*             break;
-            //*         case 1:
-            //*             ReadFromImage();
-            //*             break;
-            //*         default:
-            //*             done = true;
-            //*             break;
-            //*     }
-            //* }
         }
 
         private static void setPasswordHash(string Password)

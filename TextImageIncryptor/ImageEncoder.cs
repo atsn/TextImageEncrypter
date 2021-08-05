@@ -46,8 +46,7 @@ namespace TextImageEncrypter
 
             allText.Append(textToBeEncrypted);
         }
-
-        //TODO FIX CALCULATIONS
+        
         public int GetSizeLeftInImage()
         {
             var allTextsize = allText.ToString().GetAsUTF8BitArray().Length / 8;
@@ -57,10 +56,8 @@ namespace TextImageEncrypter
                 allTextsize = allTextsize + (16 - ((allText.ToString().GetAsUTF8BitArray().Length / 8) % 16));
             }
 
-
             var SpaceLeft = (((Image.Width * Image.Height * 3) / 8) - 4) - allTextsize;
-            //Beregn størrelsen på krypteret.
-
+           
             return SpaceLeft;
         }
 
